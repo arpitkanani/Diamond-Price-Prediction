@@ -3,5 +3,7 @@ numpy
 seaborn 
 flask
 seaborn
+ipykernel
+scikit-learn
 
 #-e .

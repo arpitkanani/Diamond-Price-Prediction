@@ -1,8 +1,9 @@
+from mlflow.models.model import urlparse
 import numpy as np
 import pandas as pd
 
-from sklearn.linear_model import LinearRegression,Ridge,Lasso,ElasticNet
-from sklearn.metrics import r2_score,mean_absolute_error,mean_squared_error
+from sklearn.linear_model import LinearRegression,Ridge,Lasso
+
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor,AdaBoostRegressor,GradientBoostingRegressor
 from xgboost import XGBRegressor
@@ -10,11 +11,18 @@ from catboost import CatBoostRegressor
 from src.logger import logging
 from src.exception import CustomException
 
-from src.utils import save_object
+from src.utils import save_object,evalute_metrics
 from src.utils import evalute_model
 from dataclasses import dataclass
 import sys,os
+import dagshub
 
+dagshub.init(repo_owner='arpitkanani', repo_name='Diamond-Price-Prediction', mlflow=True)
+
+import mlflow
+with mlflow.start_run():
+  mlflow.log_param('parameter name', 'value')
+  mlflow.log_metric('metric name', 1)
 @dataclass
 class ModelTrainerConfig:
     trained_model_file_path=os.path.join('artifacts','model.pkl')
@@ -122,6 +130,37 @@ class ModelTrainer:
 
             logging.info(f"Best Model Found , Model Name : {best_model_name} , R2 Score : {best_model_score}")
 
+            models_names=list(param.keys())
+            
+            actual_model=""
+            for model in models_names:
+                if best_model_name == model:
+                    actual_model=actual_model + model
+            
+            
+            best_params=param[actual_model]
+
+            mlflow.set_registry_uri("https://dagshub.com/arpitkanani/Diamond-Price-Prediction.mlflow")
+            tracking_url_type_store= urlparse(mlflow.get_tracking_uri()).scheme
+
+            #ml flow pipe line
+            with mlflow.start_run():
+                predicted_qualities=best_model.predict(X_test)
+
+                (score,rmse,mae)=evalute_metrics(y_test,predicted_qualities)
+
+                mlflow.log_params(best_params)
+
+                mlflow.log_metric("rmse",rmse)
+                mlflow.log_metric("r2",score)
+                mlflow.log_metric("mae",mae)
+                
+
+                if tracking_url_type_store != 'file':
+                    mlflow.sklearn.log_model(sk_model=best_model,name="model") # type: ignore
+
+                else:
+                    mlflow.sklearn.log_model(best_model,'model') # type: ignore
 
             save_object(
                 file_path=self.model_trainer_config.trained_model_file_path,

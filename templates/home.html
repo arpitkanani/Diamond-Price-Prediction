@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Gemstone Price Prediction</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    *{box-sizing:border-box;}
+    html,body{height:100%;margin:0;padding:0;}
+
+    body{
+      font-family:"Poppins",sans-serif;
+      background:linear-gradient(135deg,#f5f7fa,#e4ecf7);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+      color:#2c3e50;
+    }
+
+    .card{
+      width:100%;
+      max-width:700px;
+      background:#fff;
+      border-radius:14px;
+      padding:22px;
+      box-shadow:0 18px 40px rgba(0,0,0,.12);
+      position:relative;
+    }
+
+    /* Refresh Button */
+    .refresh-btn{
+      position:absolute;
+      top:14px;
+      right:14px;
+      background:#3b82f6;
+      color:#fff;
+      border:none;
+      padding:7px 12px;
+      border-radius:8px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .refresh-btn:hover{background:#2563eb;}
+
+    h1{text-align:center;margin:4px 0 6px;font-size:22px;}
+    .subtitle{text-align:center;font-size:13px;color:#5f6f82;margin-bottom:14px;}
+
+    .form-row{display:flex;gap:12px;margin-bottom:12px;}
+    .form-group{flex:1;}
+
+    label{display:block;font-size:13px;margin-bottom:5px;font-weight:500;}
+
+    input,select{
+      width:100%;
+      padding:9px 10px;
+      border-radius:8px;
+      border:1px solid #ccd6e3;
+      font-size:13px;
+    }
+
+    input:focus,select:focus{
+      outline:none;
+      border-color:#3b82f6;
+      box-shadow:0 0 0 3px rgba(59,130,246,.15);
+    }
+
+    .predict-btn{
+      width:100%;
+      margin-top:10px;
+      padding:11px;
+      border:none;
+      border-radius:10px;
+      background:#3b82f6;
+      color:#fff;
+      font-weight:600;
+      font-size:15px;
+      cursor:pointer;
+    }
+    .predict-btn:hover{background:#2563eb;}
+
+    .result{
+      margin-top:16px;
+      padding:12px;
+      border-radius:10px;
+      background:#f1f5ff;
+      border:1px solid #dbe5ff;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .result .label{font-size:13px;color:#475569;}
+    .result .value{font-size:16px;font-weight:700;color:#1e40af;}
+
+    @media(max-width:600px){
+      .form-row{flex-direction:column;}
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button{
+      -webkit-appearance:none;
+      margin:0;
+    }
+    input[type="number"]{
+      -moz-appearance:textfield;
+      appearance:textfield;
+    }
+  </style>
+</head>
+
+<body>
+<div class="card">
+
+  <button id="refreshBtn" class="refresh-btn">Refresh</button>
+
+  <h1>💎 Gemstone Price Prediction</h1>
+  <div class="subtitle">Enter gemstone details to predict its market price</div>
+
+  <form action="{{ url_for('predict_datapoints') }}" method="POST">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cut</label>
+        <select name="cut" required>
+          <option value="">Select</option>
+          <option {{ 'selected' if request.form.get('cut')=='Fair' }}>Fair</option>
+          <option {{ 'selected' if request.form.get('cut')=='Good' }}>Good</option>
+          <option {{ 'selected' if request.form.get('cut')=='Very Good' }}>Very Good</option>
+          <option {{ 'selected' if request.form.get('cut')=='Premium' }}>Premium</option>
+          <option {{ 'selected' if request.form.get('cut')=='Ideal' }}>Ideal</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Color</label>
+        <select name="color" required>
+          <option value="">Select</option>
+          {% for c in ['D','E','F','G','H','I','J'] %}
+          <option {{ 'selected' if request.form.get('color')==c }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Clarity</label>
+        <select name="clarity" required>
+          <option value="">Select</option>
+          {% for cl in ['IF','VVS1','VVS2','VS1','VS2','SI1','SI2','I1'] %}
+          <option {{ 'selected' if request.form.get('clarity')==cl }}>{{ cl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Carat</label>
+        <input type="number" step="0.01" name="carat"
+               value="{{ request.form.get('carat','') }}" placeholder="0.75">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Depth</label>
+        <input type="number" step="0.01" name="depth"
+               value="{{ request.form.get('depth','') }}" placeholder="61.5">
+      </div>
+
+      <div class="form-group">
+        <label>Table</label>
+        <input type="number" step="0.01" name="table"
+               value="{{ request.form.get('table','') }}" placeholder="55">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>X (Length)</label>
+        <input type="number" step="0.01" name="x"
+               value="{{ request.form.get('x','') }}" placeholder="5.80">
+      </div>
+
+      <div class="form-group">
+        <label>Y (Width)</label>
+        <input type="number" step="0.01" name="y"
+               value="{{ request.form.get('y','') }}" placeholder="5.82">
+      </div>
+
+      <div class="form-group">
+        <label>Z (Height)</label>
+        <input type="number" step="0.01" name="z"
+               value="{{ request.form.get('z','') }}" placeholder="3.60">
+      </div>
+    </div>
+
+    <button type="submit" class="predict-btn">Predict Price</button>
+  </form>
+
+  {% if result %}
+  <div class="result">
+    <div class="label">Predicted Price</div>
+    <div class="value">{{ result }} $</div>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+document.getElementById("refreshBtn").addEventListener("click",function(){
+  window.location.href = window.location.pathname;
+});
+</script>
+
+</body>
+</html>

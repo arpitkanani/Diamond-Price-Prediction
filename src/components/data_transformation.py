@@ -92,6 +92,7 @@ class DataTransformation:
             preprocessing_obj=self.get_data_transformer_object()
             if preprocessing_obj is None:
                 raise RuntimeError("get_data_transformer_object returned None — ensure it constructs and returns a transformer")
+            
             target_column_name='price'
             drop_columns=['id',target_column_name]
 

@@ -3,12 +3,15 @@ import pandas as pd
 
 from sklearn.linear_model import LinearRegression,Ridge,Lasso,ElasticNet
 from sklearn.metrics import r2_score,mean_absolute_error,mean_squared_error
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor,AdaBoostRegressor,GradientBoostingRegressor
+from xgboost import XGBRegressor
+from catboost import CatBoostRegressor
 from src.logger import logging
 from src.exception import CustomException
 
 from src.utils import save_object
-from src.utils import evaluate_model
-
+from src.utils import evalute_model
 from dataclasses import dataclass
 import sys,os
 
@@ -35,10 +38,72 @@ class ModelTrainer:
                 "Linear Regression":LinearRegression(),
                 "Ridge":Ridge(),
                 "Lasso":Lasso(),
-                "ElasticNet":ElasticNet()
+                "DecisionTree Regeressor":DecisionTreeRegressor(),
+                "RandomForest Regressor":RandomForestRegressor(),
+                "AdaBoost Regressor":AdaBoostRegressor(),
+                "GradiantBoost Regressor":GradientBoostingRegressor(),
+                "XGB Regressor":XGBRegressor(),
+                "CatBoost Regressor":CatBoostRegressor()
             }
 
-            model_report:dict=evaluate_model(X_train,y_train,X_test,y_test,models)
+            param = {
+           "Linear Regression": {
+            #"fit_intercept": [True, False]
+            },
+
+            "Lasso": {
+                #"alpha": [0.001, 0.01, 0.1, 1, 10],
+                #"max_iter": [1000, 5000]
+            },
+
+            "Ridge": {
+                #"alpha": [0.1, 1, 10, 50],
+                #"solver": ["auto", "svd", "cholesky"]
+            },
+            "DecisionTree Regeressor": {
+                #"criterion": ["squared_error", "friedman_mse"],
+                #"max_depth": [None, 5,3, 10],
+                # "min_samples_split": [2, 5, 10],
+                #"min_samples_leaf": [1, 2, 4]
+            },
+
+            "RandomForest Regressor": {
+                #'n_estimators': [100, 200, 300],
+                #'max_depth': [None, 10, 20, 30],
+                #'max_features': ['sqrt', 'log2'],
+                #'bootstrap': [True, False]
+            },
+
+            "AdaBoost Regressor": {
+                #"n_estimators": [50, 100, 200],
+                #"learning_rate": [0.01, 0.1, 1]
+            },
+
+            "GradiantBoost Regressor": {
+                #"n_estimators": [100, 200],
+                #"learning_rate": [0.01, 0.1],
+                #"max_depth": [3, 5],
+                #"subsample": [0.8, 1.0]
+            },
+
+            'XGB Regressor' : {
+                #"n_estimators": [200, 400],
+                #"learning_rate": [0.03, 0.05, 0.1],
+                #"max_depth": [4, 6, 8],
+                #"subsample": [0.7, 0.8, 1.0],
+                #"colsample_bytree": [0.7, 0.8, 1.0],
+                #"reg_lambda": [1, 5, 10]    
+            },
+            'CatBoost Regressor':{
+                #"iterations": [300, 500],
+                #"learning_rate": [0.03, 0.05, 0.1],
+                #"depth": [4, 6, 8],
+                #"l2_leaf_reg": [1, 3, 5, 7]
+            }    
+        }
+
+
+            model_report:dict=evalute_model(X_train,y_train,X_test,y_test,models,param)
 
             print(model_report)
             print("\n====================================================================================\n")
@@ -62,6 +127,9 @@ class ModelTrainer:
                 file_path=self.model_trainer_config.trained_model_file_path,
                 obj=best_model
             )
+
+            
+        
         except Exception as e:
             logging.info("Error occurred in Model Training")
             raise CustomException(e,sys)  # type: ignore

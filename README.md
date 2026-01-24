@@ -91,25 +91,6 @@ A **Flask-based web app** allows users to:
 
 ---
 
-## 📂 Project Structure
-Diamond-Price-Prediction/
-│
-├── src/
-│ ├── components/
-│ ├── pipelines/
-│ └── utils/
-│
-├── templates/
-│ ├── index.html
-│ └── home.html
-│
-├── app.py
-├── requirements.txt
-├── README.md
-└── artifacts/
-
-
----
 
 ## ▶️ How to Run Locally
 

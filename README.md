@@ -1,7 +1,7 @@
 # **Machine Learning Project** 
 # 💎 Diamond Price Prediction
 
-# Live deployed Link: https://gemstone-price-prediction-isec.onrender.com/
+### Live deployed Link: https://gemstone-price-prediction-isec.onrender.com/
 
 ## 📌 Overview
 This project focuses on predicting the **price of diamonds** using **machine learning regression models** based on their physical and quality-related attributes.  
